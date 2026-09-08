@@ -1,0 +1,19 @@
+[Unit]
+Description=TigerVNC Headless Remote Desktop Server
+After=network.target network-online.target rpi-wifi-autoconfig.service
+
+[Service]
+Type=forking
+User=root
+Environment=HOME=/root
+Environment=USER=root
+Environment=DISPLAY=:1
+Environment=QT_QPA_PLATFORM=xcb
+ExecStartPre=-/usr/bin/vncserver -kill :1
+ExecStart=/usr/bin/vncserver :1 -geometry 1280x720 -depth 24 -localhost no -SecurityTypes None
+ExecStop=/usr/bin/vncserver -kill :1
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

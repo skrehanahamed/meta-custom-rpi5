@@ -1,0 +1,18 @@
+ctrl_interface=/var/run/wpa_supplicant
+ctrl_interface_group=0
+update_config=1
+country=IN
+
+network={
+    ssid="Knspg 4 th floor_5G"
+    psk="Suresh9542"
+    key_mgmt=WPA-PSK
+    priority=10
+}
+
+network={
+    ssid="Knspg 4 th floor"
+    psk="Suresh9542"
+    key_mgmt=WPA-PSK
+    priority=5
+}

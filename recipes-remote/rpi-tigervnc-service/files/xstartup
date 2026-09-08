@@ -1,0 +1,27 @@
+#!/bin/sh
+# ==============================================================================
+# TigerVNC XStartup Script for Headless Raspberry Pi 5
+# ==============================================================================
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+
+# Set default display
+export DISPLAY=:1
+
+# Set Qt platform to xcb (standard X11) when running under TigerVNC
+export QT_QPA_PLATFORM=xcb
+
+# Start Openbox window manager for clean window handling
+if command -v openbox-session >/dev/null 2>&1; then
+    openbox-session &
+elif command -v openbox >/dev/null 2>&1; then
+    openbox &
+fi
+
+# Auto-launch custom user startup script if present
+if [ -f "$HOME/.vnc/autostart" ]; then
+    sh "$HOME/.vnc/autostart" &
+elif [ -x /usr/bin/qt6-sample-app ]; then
+    # Auto-launch the Qt6 demonstration app
+    /usr/bin/qt6-sample-app &
+fi

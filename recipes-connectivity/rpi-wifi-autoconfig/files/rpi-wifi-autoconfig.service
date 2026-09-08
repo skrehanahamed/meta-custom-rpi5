@@ -1,0 +1,12 @@
+[Unit]
+Description=Raspberry Pi Headless Wi-Fi Auto-Configuration
+Before=network-pre.target wpa_supplicant@wlan0.service
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/rpi-wifi-autoconfig.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
