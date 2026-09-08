@@ -29,6 +29,22 @@ This automatically:
 
 ---
 
+## 💾 Flashing the OS to MicroSD Card (Zero Compilation)
+
+The complete compressed production OS image is tracked directly in this repository in [`deploy/image/`](deploy/image/).
+
+### 1. Reassemble the image:
+```bash
+./scripts/assemble-image.sh
+```
+*(This verifies the SHA256 integrity and outputs `deploy/image/rpi5-qt-headless-image.wic.bz2`).*
+
+### 2. Flash to MicroSD card:
+- Open **Raspberry Pi Imager** ➔ **Choose OS** ➔ **Use Custom** ➔ Select `rpi5-qt-headless-image.wic.bz2` ➔ **Write**!
+- Plug into your Raspberry Pi 5 and power on. It will automatically connect to your Wi-Fi and start the IVI!
+
+---
+
 ## 🖥️ Viewing the IVI Interface (TigerVNC / Screen Sharing)
 
 The Raspberry Pi 5 boots headlessly and renders the IVI at **1280x720 24-bit** color on display `:1` (port `5901`).

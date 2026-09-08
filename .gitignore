@@ -5,3 +5,7 @@ build/
 downloads/
 sstate-cache/
 tmp/
+*.wic.bz2
+*.img
+*.wic
+!*.part-*
