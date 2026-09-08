@@ -1,111 +1,116 @@
 # meta-custom-rpi5: Headless Qt 6.7 IVI & BSP for Raspberry Pi 5
 
-Custom **Yocto Scarthgap (5.0.x)** BSP layer and deployment toolkit for **Raspberry Pi 5 (`raspberrypi5`, ARM64 / aarch64)**.
+Custom Yocto Scarthgap (5.0.x) BSP layer and deployment toolkit for Raspberry Pi 5 (`raspberrypi5`, ARM64 / aarch64).
 
-Pre-configured with full **Qt 6.7 LTS**, **TigerVNC remote desktop**, **Openbox kiosk window manager**, **Bluetooth 5.0**, **multi-touch touchscreen input**, **out-of-the-box Wi-Fi autoconfiguration**, and the **Apex Mid-End In-Vehicle Infotainment (IVI)** system.
+Pre-configured with Qt 6.7 LTS, TigerVNC remote desktop, Openbox kiosk window manager, Bluetooth 5.0, multi-touch touchscreen input, automatic Wi-Fi association, and the Apex Mid-End In-Vehicle Infotainment (IVI) system.
 
 ---
 
-## 🚀 Quick Start: 1-Click SSH Deployment (Zero Compilation)
+## Quick Start: 1-Click SSH Deployment (Zero Compilation)
 
-If your Raspberry Pi 5 is already running the Yocto image on your network, you do **not** need to compile anything. The pre-compiled ARM64 binary is bundled in this repository.
+If the Raspberry Pi 5 is already running the Yocto image on the local network, compiling from source is not required. The pre-compiled ARM64 binary is bundled in this repository.
 
-### Deploy to your Pi in 3 seconds:
+### Deployment Command:
 
 ```bash
 # Clone this repository
 git clone git@github.com:skrehanahamed/meta-custom-rpi5.git
 cd meta-custom-rpi5
 
-# Deploy to Raspberry Pi 5 IP (e.g. 192.168.1.217)
+# Deploy to Raspberry Pi 5 target IP
 chmod +x scripts/deploy-to-pi.sh
 ./scripts/deploy-to-pi.sh 192.168.1.217
 ```
 
-This automatically:
-1. Stops any existing IVI instances.
+This procedure performs the following:
+1. Terminates any active IVI application processes.
 2. Transfers the optimized `bin/ApexIVI` binary into `/usr/bin/ApexIVI`.
-3. Restarts `tigervnc.service` directly into pure fullscreen touchscreen kiosk mode.
+3. Restarts `tigervnc.service` directly into frameless fullscreen touchscreen kiosk mode.
 
 ---
 
-## 💾 Flashing the OS to MicroSD Card (Zero Compilation)
+## MicroSD OS Image Installation (Zero Compilation)
 
-The complete compressed production OS image is tracked directly in this repository in [`deploy/image/`](deploy/image/).
+The complete compressed production OS disk image is tracked in this repository under `deploy/image/`.
 
-### 1. Reassemble the image:
+### 1. Reassemble the image parts:
 ```bash
 ./scripts/assemble-image.sh
 ```
-*(This verifies the SHA256 integrity and outputs `deploy/image/rpi5-qt-headless-image.wic.bz2`).*
+This command verifies SHA256 integrity and generates `deploy/image/rpi5-qt-headless-image.wic.bz2`.
 
-### 2. Flash to MicroSD card:
-- Open **Raspberry Pi Imager** ➔ **Choose OS** ➔ **Use Custom** ➔ Select `rpi5-qt-headless-image.wic.bz2` ➔ **Write**!
-- Plug into your Raspberry Pi 5 and power on. It will automatically connect to your Wi-Fi and start the IVI!
+### 2. Write to MicroSD Card:
+- Open Raspberry Pi Imager or BalenaEtcher.
+- Select "Use Custom" and choose `rpi5-qt-headless-image.wic.bz2`.
+- Target the MicroSD card and write the image.
+- Insert the card into the Raspberry Pi 5 and power on. The system connects automatically to configured Wi-Fi networks and launches the IVI service.
 
 ---
 
-## 🖥️ Viewing the IVI Interface (TigerVNC / Screen Sharing)
+## Remote Display and VNC Access
 
-The Raspberry Pi 5 boots headlessly and renders the IVI at **1280x720 24-bit** color on display `:1` (port `5901`).
+The system boots headlessly and renders the IVI interface at 1280x720 24-bit color on display `:1` (port `5901`).
 
-### Connect from macOS:
-- In Terminal:
+### macOS Connection:
+- Terminal:
   ```bash
   open vnc://192.168.1.217:5901
   ```
-- Or in **Finder**: Press <kbd>Cmd</kbd> + <kbd>K</kbd> and enter `vnc://192.168.1.217:5901`.
-- **Default VNC Password**: `raspberry` (or leave username blank).
+- Finder: Press Cmd + K and connect to `vnc://192.168.1.217:5901`.
+- VNC Password: `raspberry` (Username may remain blank).
 
-### Connect from Linux / Windows:
-- Use any standard VNC client (TigerVNC Viewer, RealVNC, Remmina) pointing to `<PI_IP>:5901`.
+### Linux and Windows Connection:
+- Connect using any standard VNC client (TigerVNC Viewer, RealVNC, Remmina) to `<PI_IP>:5901`.
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 meta-custom-rpi5/
 ├── bin/
-│   └── ApexIVI                     # Pre-compiled ARM64 binary (fullscreen kiosk + blank cursor)
+│   └── ApexIVI                     # Pre-compiled ARM64 binary (fullscreen kiosk, blank cursor)
 ├── scripts/
-│   └── deploy-to-pi.sh             # 1-click SSH deployment script
+│   ├── deploy-to-pi.sh             # SSH deployment script
+│   └── assemble-image.sh           # Image part reassembly script
+├── deploy/
+│   └── image/                      # Multi-part production disk image and checksums
 ├── conf/
-│   └── layer.conf                  # Yocto layer definition
+│   └── layer.conf                  # Yocto layer configuration
 ├── recipes-connectivity/
-│   └── rpi-wifi-autoconfig/        # Dual-band automatic Wi-Fi association on boot
+│   └── rpi-wifi-autoconfig/        # Automated Wi-Fi association service
 ├── recipes-core/
 │   └── images/
-│       └── rpi5-qt-headless-image.bb # Full production IVI bootable image recipe
+│       └── rpi5-qt-headless-image.bb # Bootable OS image recipe
 ├── recipes-qt/
 │   ├── apex-ivi/                   # BitBake recipe for Apex Mid-End IVI
 │   └── qt6-sample-app/             # BitBake recipe for Qt 6 test application
 ├── recipes-remote/
-│   └── rpi-tigervnc-service/       # TigerVNC systemd service & xstartup configs
+│   └── rpi-tigervnc-service/       # TigerVNC service and display startup configs
 ├── docker/
-│   └── Dockerfile                  # Containerized Yocto Scarthgap build environment
-├── docker-build.sh                 # Docker runner helper script
-└── setup-workspace.sh              # Layer cloner and workspace initializer
+│   └── Dockerfile                  # Containerized Yocto build environment
+├── docker-build.sh                 # Docker execution wrapper
+└── setup-workspace.sh              # Workspace dependency initialization script
 ```
 
 ---
 
-## 🛠️ Building from Scratch (Optional)
+## Source Build Instructions (Optional)
 
-If you ever wish to modify recipes or rebuild the full bootable microSD OS disk image:
+To modify system packages or rebuild the full operating system image:
 
-### Prerequisites
-- Docker Desktop (macOS or Linux) with at least 50 GB free disk space.
+### Prerequisites:
+- Docker Desktop with at least 50 GB available disk space.
 
-### Steps:
+### Commands:
 ```bash
-# 1. Setup Yocto workspace layers
+# 1. Initialize workspace layers
 ./docker-build.sh setup
 
-# 2. Build the complete bootable disk image
+# 2. Build full bootable disk image
 ./docker-build.sh build
 
-# 3. Or compile only the Apex IVI recipe
+# 3. Or compile individual recipes inside build shell
 ./docker-build.sh shell
 source /workspace/sources/poky/oe-init-build-env /workspace/build
 bitbake apex-ivi
@@ -113,10 +118,10 @@ bitbake apex-ivi
 
 ---
 
-## 🔑 Default Credentials & System Info
+## System Configuration and Defaults
 
-- **Root Login**: `ssh root@192.168.1.217` (Passwordless)
-- **VNC Display**: `:1` (Port `5901`)
-- **VNC Password**: `raspberry`
-- **Linux Kernel**: 6.6.63 LTS (RPi 5 BCM2712 optimized, 64-bit ARM64)
-- **Qt Version**: Qt 6.7.3 LTS (`qtbase`, `qtdeclarative`, `qtmultimedia`, `qtquick3d`)
+- Root Login: `ssh root@192.168.1.217` (Passwordless)
+- VNC Port: `5901` (Display `:1`)
+- VNC Password: `raspberry`
+- Kernel: Linux 6.6.63 LTS (BCM2712 aarch64)
+- Framework: Qt 6.7.3 LTS
