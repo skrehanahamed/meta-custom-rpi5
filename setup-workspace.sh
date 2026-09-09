@@ -51,9 +51,14 @@ else
 fi
 
 # 5. Link or copy custom layer
-if [ ! -d "sources/meta-custom-rpi5" ]; then
+if [ ! -e "sources/meta-custom-rpi5" ]; then
     echo ">> Linking meta-custom-rpi5 into sources..."
-    ln -s ../meta-custom-rpi5 sources/meta-custom-rpi5
+    if [ -f "${SCRIPT_DIR}/conf/layer.conf" ]; then
+        # SCRIPT_DIR is the meta-custom-rpi5 repository itself (e.g. GitHub Actions runner)
+        ln -sfn "${SCRIPT_DIR}" sources/meta-custom-rpi5
+    elif [ -d "${SCRIPT_DIR}/meta-custom-rpi5" ]; then
+        ln -sfn "${SCRIPT_DIR}/meta-custom-rpi5" sources/meta-custom-rpi5
+    fi
 fi
 
 # 6. Initialize Build Directory
@@ -69,6 +74,12 @@ fi
 if [ ! -f "build/conf/bblayers.conf" ]; then
     echo ">> Installing conf/bblayers.conf..."
     cp "${SCRIPT_DIR}/conf/bblayers.conf.sample" build/conf/bblayers.conf
+fi
+
+# Preserve disk space in GitHub Actions / CI runners
+if [ "${CI:-false}" = "true" ] || [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
+    echo ">> Running in CI environment: enabling rm_work for disk space preservation..."
+    sed -i 's/# INHERIT += "rm_work"/INHERIT += "rm_work"/' build/conf/local.conf
 fi
 
 echo "================================================================="

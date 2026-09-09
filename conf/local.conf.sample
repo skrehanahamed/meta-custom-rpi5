@@ -1,0 +1,70 @@
+# ==============================================================================
+# Yocto Project local.conf for Raspberry Pi 5
+# Release: Scarthgap (5.0 LTS)
+# Features: Headless, Qt6 IVI, TigerVNC, Auto-WiFi, Bluetooth, Touchscreen, OpenSSH
+# ==============================================================================
+
+# Target Machine
+MACHINE = "raspberrypi5"
+
+# Distribution
+DISTRO = "poky"
+
+# Use systemd as init manager (modern Yocto standard)
+INIT_MANAGER = "systemd"
+DISTRO_FEATURES:append = " wifi bluetooth x11 opengl vulkan pam systemd alsa"
+DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
+
+# Package Manager
+PACKAGE_CLASSES ?= "package_rpm"
+
+# Image Features: Enable SSH with root access, package management, debug tools
+EXTRA_IMAGE_FEATURES ?= "debug-tweaks ssh-server-openssh package-management"
+
+# MicroSD Card Image Generation (.wic format)
+IMAGE_FSTYPES = "wic.bz2 wic.bmap tar.bz2"
+SDIMG_ROOTFS_TYPE = "ext4"
+
+# Raspberry Pi Hardware Specific Settings
+ENABLE_UART = "1"
+ENABLE_I2C = "1"
+ENABLE_SPI = "1"
+RPI_USE_U_BOOT = "0"
+GPU_MEM_1024 = "256"
+DISABLE_OVERSCAN = "1"
+
+# Hardware Overlays & Drivers for Displays, Touchscreens, and IVI Audio
+RPI_EXTRA_CONFIG += " \
+    dtoverlay=vc4-kms-v3d \
+    dtparam=i2c_arm=on \
+    dtparam=spi=on \
+    dtparam=audio=on \
+"
+
+# Kernel modules autoload for Touchscreen, Event Devices, Virtual Input, and CAN bus (IVI)
+KERNEL_MODULE_AUTOLOAD:append = " uinput evdev can can_raw vcan"
+
+# Accept licenses for Broadcom/Synaptics Wi-Fi & Bluetooth firmwares
+LICENSE_FLAGS_ACCEPTED += "synaptics-killswitch commercial"
+
+# Ensure Wi-Fi & Bluetooth firmwares are included
+MACHINE_EXTRA_RRECOMMENDS:append = " \
+    linux-firmware-rpidistro-bcm43455 \
+    linux-firmware-rpidistro-bcm43430 \
+    linux-firmware-cypress \
+    bluez5 \
+    bluez5-noinst-tools \
+"
+
+# Qt6 Configuration Tweaks with Touchscreen (libinput/tslib) and Multimedia Support
+PACKAGECONFIG_FONTS:pn-qtbase = "fontconfig"
+PACKAGECONFIG:append:pn-qtbase = " xcb eglfs gbm kms fontconfig sql-sqlite libinput tslib udev xkbcommon"
+
+# Optional: Disk Space Optimization (Uncomment to automatically clean work dirs after packaging)
+# INHERIT += "rm_work"
+
+# Shared state and download cache directories
+DL_DIR ?= "${TOPDIR}/../downloads"
+SSTATE_DIR ?= "${TOPDIR}/../sstate-cache"
+
+CONF_VERSION = "2"
