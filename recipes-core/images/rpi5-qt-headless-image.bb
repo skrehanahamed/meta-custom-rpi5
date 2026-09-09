@@ -63,6 +63,8 @@ IMAGE_INSTALL:append = " \
     gstreamer1.0 \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    faad2 \
     can-utils \
     qtbase \
     qtbase-plugins \
