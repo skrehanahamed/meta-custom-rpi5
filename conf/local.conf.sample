@@ -14,6 +14,7 @@ DISTRO = "poky"
 INIT_MANAGER = "systemd"
 DISTRO_FEATURES:append = " wifi bluetooth x11 opengl vulkan pam systemd alsa"
 DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
+DEFAULT_TIMEZONE = "Asia/Kolkata"
 
 # Package Manager
 PACKAGE_CLASSES ?= "package_rpm"
