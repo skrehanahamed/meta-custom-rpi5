@@ -51,7 +51,7 @@ LICENSE_FLAGS_ACCEPTED += "synaptics-killswitch commercial"
 MACHINE_EXTRA_RRECOMMENDS:append = " \
     linux-firmware-rpidistro-bcm43455 \
     linux-firmware-rpidistro-bcm43430 \
-    linux-firmware-cypress \
+    bluez-firmware-rpidistro-bcm4345c0-hcd \
     bluez5 \
     bluez5-noinst-tools \
 "
