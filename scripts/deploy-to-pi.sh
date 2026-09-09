@@ -45,14 +45,17 @@ echo ">> 3. Configuring and launching systemd service (qt-app.service)..."
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${TARGET_USER}@${TARGET_HOST}" "cat << 'EOF' > /etc/systemd/system/qt-app.service
 [Unit]
 Description=Qt 6 Native Hardware-Accelerated Application (DRM/KMS EGLFS)
-After=systemd-udev-settle.service
-Wants=systemd-udev-settle.service
+After=systemd-udev-settle.service pipewire.service wireplumber.service pipewire-pulse.service
+Wants=systemd-udev-settle.service pipewire-pulse.service
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=/root
 Environment=HOME=/root
+Environment=XDG_RUNTIME_DIR=/run/user/0
+Environment=PULSE_SERVER=unix:/run/user/0/pulse/native
+Environment=PIPEWIRE_RUNTIME_DIR=/run/pipewire
 Environment=QT_QPA_PLATFORM=eglfs
 Environment=QT_QPA_EGLFS_INTEGRATION=eglfs_kms
 Environment=QT_QPA_EGLFS_KMS_CONFIG=/etc/kms.conf
