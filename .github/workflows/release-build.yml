@@ -32,8 +32,10 @@ jobs:
 
       - name: Install Host Build Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          # Remove third-party repos (like Chrome) on GitHub runners that frequently fail with Hash Sum mismatches
+          sudo rm -f /etc/apt/sources.list.d/*chrome* /etc/apt/sources.list.d/*google*
+          sudo apt-get update -o Acquire::Retries=3 || true
+          sudo apt-get install -y --no-install-recommends \
             gawk wget git diffstat unzip texinfo gcc build-essential \
             chrpath socat cpio python3 python3-pip python3-pexpect \
             xz-utils debianutils iputils-ping python3-git python3-jinja2 \
