@@ -58,6 +58,7 @@ Environment=QT_QPA_EGLFS_INTEGRATION=eglfs_kms
 Environment=QT_QPA_EGLFS_KMS_CONFIG=/etc/kms.conf
 Environment=QT_QPA_EGLFS_KMS_ATOMIC=1
 Environment=QT_QPA_EGLFS_HIDECURSOR=0
+Environment=QT_SCALE_FACTOR=1.5
 Environment=QSG_INFO=1
 ExecStartPre=-/bin/sh -c 'echo 6 > /sys/kernel/debug/bluetooth/hci0/conn_min_interval 2>/dev/null; echo 6 > /sys/kernel/debug/bluetooth/hci0/conn_max_interval 2>/dev/null; echo 0 > /sys/kernel/debug/bluetooth/hci0/conn_latency 2>/dev/null || true'
 ExecStart=/usr/bin/${APP_NAME}
