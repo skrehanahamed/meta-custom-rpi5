@@ -206,26 +206,46 @@ bitbake rpi5-qt-headless-image
 
 ## Deploying Your Own Qt Application
 
-To run any custom Qt 6 binary on the board:
+To deploy and execute any custom ARM64 Qt 6 binary on the Raspberry Pi 5 with hardware GPU acceleration:
 
+### 1-Click Automated Deployment Script
+```bash
+# Syntax: ./scripts/deploy-to-pi.sh <path_to_binary> [target_ip_or_hostname]
+./scripts/deploy-to-pi.sh ./build/my_qt_app raspberrypi5.local
+```
+This script automatically:
+1. Transfers the compiled ARM64 binary to `/usr/bin/` on the board.
+2. Ensures execution permissions.
+3. Automatically writes and enables `/etc/systemd/system/qt-app.service` configured with DRM/KMS Atomic EGLFS drivers.
+4. Starts the application immediately on the connected HDMI display at 60 FPS.
+
+### Manual Deployment
 ```bash
 # 1. Copy your compiled binary to the target
 scp my_custom_app root@raspberrypi5.local:/usr/bin/
 
 # 2. Run fullscreen with hardware GPU acceleration on HDMI
-ssh root@raspberrypi5.local "/usr/bin/my_custom_app -platform eglfs"
+ssh root@raspberrypi5.local "QT_QPA_PLATFORM=eglfs QT_QPA_EGLFS_INTEGRATION=eglfs_kms QT_QPA_EGLFS_KMS_CONFIG=/etc/kms.conf QT_QPA_EGLFS_KMS_ATOMIC=1 /usr/bin/my_custom_app"
 ```
 
-To run your application automatically on boot, create `/etc/systemd/system/custom-qt-app.service`:
+To configure your application to start automatically on boot, write `/etc/systemd/system/qt-app.service`:
 ```ini
 [Unit]
-Description=Custom Qt 6 Hardware EGLFS Application
-After=systemd-user-sessions.service
+Description=Qt 6 Native Hardware-Accelerated Application (DRM/KMS EGLFS)
+After=systemd-udev-settle.service
+Wants=systemd-udev-settle.service
 
 [Service]
 Type=simple
 User=root
+WorkingDirectory=/root
+Environment=HOME=/root
 Environment=QT_QPA_PLATFORM=eglfs
+Environment=QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+Environment=QT_QPA_EGLFS_KMS_CONFIG=/etc/kms.conf
+Environment=QT_QPA_EGLFS_KMS_ATOMIC=1
+Environment=QT_QPA_EGLFS_HIDECURSOR=0
+Environment=QSG_INFO=1
 ExecStart=/usr/bin/my_custom_app
 Restart=always
 RestartSec=2
@@ -235,7 +255,7 @@ WantedBy=multi-user.target
 ```
 Enable and start the service:
 ```bash
-systemctl enable --now custom-qt-app.service
+systemctl enable --now qt-app.service
 ```
 
 ---

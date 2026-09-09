@@ -1,41 +1,80 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Fast 1-Click Deployment Script for Raspberry Pi 5 Headless IVI
-# Zero Compilation Needed - Deploys pre-built ARM64 binary over SSH
+# Generic Deployment Script for Raspberry Pi 5 Qt 6 Applications
+# Deploys any compiled ARM64 Qt binary over SSH to run natively on hardware GPU
 # ==============================================================================
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(dirname "${SCRIPT_DIR}")"
-BINARY_PATH="${REPO_DIR}/bin/rpi5/ApexIVI"
-TARGET_IP="${1:-192.168.1.217}"
+BINARY_PATH="${1:-}"
+TARGET_HOST="${2:-raspberrypi5.local}"
 TARGET_USER="root"
 
-if [ ! -f "${BINARY_PATH}" ]; then
-    echo "Error: Pre-compiled binary not found at ${BINARY_PATH}"
+if [ -z "${BINARY_PATH}" ]; then
+    echo "========================================================================"
+    echo "  Raspberry Pi 5 Qt 6 Generic Application Deployer"
+    echo "========================================================================"
+    echo "Usage: $0 <path_to_arm64_qt_binary> [target_ip_or_hostname]"
+    echo ""
+    echo "Example:"
+    echo "  $0 ./build/my-qt-app 192.168.1.50"
+    echo "  $0 ./my-dashboard raspberrypi5.local"
+    echo "========================================================================"
     exit 1
 fi
 
-echo "========================================================"
-echo "  Deploying Apex IVI to Raspberry Pi 5 ($TARGET_IP)"
-echo "========================================================"
+if [ ! -f "${BINARY_PATH}" ]; then
+    echo "Error: Binary not found at '${BINARY_PATH}'"
+    exit 1
+fi
 
-echo ">> 1. Stopping existing IVI instance..."
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${TARGET_USER}@${TARGET_IP}" \
-    "systemctl stop tigervnc.service; killall -9 ApexIVI 2>/dev/null || true"
-
-echo ">> 2. Transferring pre-compiled ARM64 binary (15 MB)..."
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${BINARY_PATH}" "${TARGET_USER}@${TARGET_IP}:/usr/bin/ApexIVI"
-
-echo ">> 3. Ensuring execution permissions and restarting TigerVNC..."
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${TARGET_USER}@${TARGET_IP}" \
-    "chmod +x /usr/bin/ApexIVI; systemctl restart tigervnc.service"
-
-echo ">> 4. Verifying status..."
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${TARGET_USER}@${TARGET_IP}" \
-    "systemctl is-active tigervnc"
+APP_NAME="$(basename "${BINARY_PATH}")"
 
 echo "========================================================"
-echo "  Deployment Complete! Apex IVI is live on display :1"
-echo "  Connect via: open vnc://${TARGET_IP}:5901"
+echo "  Deploying ${APP_NAME} to Raspberry Pi 5 (${TARGET_HOST})"
+echo "========================================================"
+
+echo ">> 1. Transferring binary to /usr/bin/${APP_NAME}..."
+scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    "${BINARY_PATH}" "${TARGET_USER}@${TARGET_HOST}:/usr/bin/${APP_NAME}"
+
+echo ">> 2. Setting executable permissions..."
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${TARGET_USER}@${TARGET_HOST}" \
+    "chmod +x /usr/bin/${APP_NAME}"
+
+echo ">> 3. Configuring and launching systemd service (qt-app.service)..."
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${TARGET_USER}@${TARGET_HOST}" "cat << 'EOF' > /etc/systemd/system/qt-app.service
+[Unit]
+Description=Qt 6 Native Hardware-Accelerated Application (DRM/KMS EGLFS)
+After=systemd-udev-settle.service
+Wants=systemd-udev-settle.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+Environment=HOME=/root
+Environment=QT_QPA_PLATFORM=eglfs
+Environment=QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+Environment=QT_QPA_EGLFS_KMS_CONFIG=/etc/kms.conf
+Environment=QT_QPA_EGLFS_KMS_ATOMIC=1
+Environment=QT_QPA_EGLFS_HIDECURSOR=0
+Environment=QSG_INFO=1
+ExecStart=/usr/bin/${APP_NAME}
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now qt-app.service
+"
+
+echo ">> 4. Verifying service status on target..."
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${TARGET_USER}@${TARGET_HOST}" \
+    "systemctl is-active qt-app.service"
+
+echo "========================================================"
+echo "  Deployment Complete! ${APP_NAME} is live on HDMI (60 FPS GPU)"
+echo "  Check live logs: ssh ${TARGET_USER}@${TARGET_HOST} 'journalctl -u qt-app.service -f'"
 echo "========================================================"
