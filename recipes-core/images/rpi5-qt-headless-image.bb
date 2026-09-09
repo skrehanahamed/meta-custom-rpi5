@@ -24,6 +24,7 @@ IMAGE_INSTALL:append = " \
     bluez-firmware-rpidistro-bcm4345c0-hcd \
     bluez5 \
     bluez5-noinst-tools \
+    bluez5-obex \
     iw \
     wpa-supplicant \
     rpi-wifi-autoconfig \
