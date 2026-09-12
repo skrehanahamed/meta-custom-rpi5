@@ -1,0 +1,27 @@
+[Unit]
+Description=Apex IVI Automotive Infotainment (DRM/KMS Native)
+After=network.target sound.target bluetooth.target systemd-user-sessions.service
+Wants=bluetooth.target sound.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+Environment="LANG=C.UTF-8"
+Environment="LC_ALL=C.UTF-8"
+Environment="QT_QPA_PLATFORM=eglfs"
+Environment="QT_QPA_EGLFS_INTEGRATION=eglfs_kms"
+Environment="QT_QPA_EGLFS_KMS_CONFIG=/etc/kms.json"
+Environment="QT_SCALE_FACTOR=1.5"
+Environment="QT_ENABLE_HIGHDPI_SCALING=1"
+Environment="QT_QPA_EGLFS_HIDECURSOR=0"
+Environment="QT_MEDIA_BACKEND=gstreamer"
+Environment="GST_AUDIO_SINK=bin.( audioconvert ! audioresample ! alsasink device=sysdefault:1 )"
+Environment="GST_DEFAULT_SINK=bin.( audioconvert ! audioresample ! alsasink device=sysdefault:1 )"
+Environment="XDG_RUNTIME_DIR=/run/user/0"
+ExecStart=/usr/bin/ApexIVI
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

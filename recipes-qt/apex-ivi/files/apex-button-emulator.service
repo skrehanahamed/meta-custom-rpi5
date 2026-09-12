@@ -1,0 +1,15 @@
+[Unit]
+Description=Apex IVI Physical Button and Vehicle Controls Emulator
+After=apex-ivi.service
+Wants=apex-ivi.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/bin/apex-button-emulator.py
+Restart=always
+RestartSec=2
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

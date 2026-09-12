@@ -1,6 +1,6 @@
-SUMMARY = "Raspberry Pi 5 Headless Qt6 IVI Image with TigerVNC, Auto-WiFi, Bluetooth, Touch & OpenSSH"
-DESCRIPTION = "A fully featured, headless Linux image designed for Raspberry Pi 5 to run Qt6 IVI \
-applications remotely over TigerVNC or locally on Touchscreens with Bluetooth, Audio, and CAN bus."
+SUMMARY = "Raspberry Pi 5 Qt6 IVI Image with Auto-WiFi, Bluetooth, Touch & OpenSSH"
+DESCRIPTION = "A fully featured Linux image designed for Raspberry Pi 5 to run Qt6 IVI \
+applications locally on displays/touchscreens with Bluetooth, Audio, and CAN bus."
 LICENSE = "MIT"
 
 inherit core-image
@@ -46,14 +46,6 @@ IMAGE_INSTALL:append = " \
     libinput-bin \
     evtest \
     mtdev \
-    tigervnc \
-    rpi-tigervnc-service \
-    openbox \
-    xterm \
-    xhost \
-    xauth \
-    xrandr \
-    xorg-minimal-fonts \
     fontconfig \
     ttf-dejavu-sans \
     ttf-dejavu-sans-mono \
@@ -86,6 +78,7 @@ IMAGE_INSTALL:append = " \
     qtwayland-plugins \
     libxkbcommon \
     qt6-sample-app \
+    apex-ivi \
 "
 
 # Allocate extra rootfs space (approx 2GB free for user IVI apps and assets)
