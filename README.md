@@ -135,12 +135,18 @@ meta-custom-rpi5/
 │   └── images/
 │       └── rpi5-qt-headless-image.bb       # Complete production bootable disk image recipe
 ├── recipes-qt/
+│   ├── apex-ivi/                           # Apex Automotive Infotainment (D-Audio IVI) recipe
+│   │   ├── apex-ivi.bb                     # CMake Qt 6 application recipe & packaging
+│   │   └── files/
+│   │       ├── apex-ivi.service            # Systemd auto-boot DRM/KMS EGLFS unit
+│   │       ├── apex-button-emulator.py     # CAN / rotary knob encoder hardware button daemon
+│   │       ├── apex-button-emulator.service# Background systemd rotary key emulator
+│   │       ├── kms.json                    # EGLFS KMS display plane and scanout config
+│   │       └── asound.conf                 # ALSA audio hardware bridge configuration
 │   ├── qt6/                                # Qt 6 framework configuration bbappend
 │   │   └── qtbase_%.bbappend               # Enables gbm, kms, and eglfs device integrations
 │   └── qt6-sample-app/                     # Touch and graphics validation test harness
 │       └── qt6-sample-app.bb
-├── recipes-remote/
-│   └── rpi-tigervnc-service/               # Optional remote maintenance VNC service
 ├── scripts/
 │   ├── deploy-to-pi.sh                     # Live board deployment utility via SSH
 │   └── assemble-image.sh                   # Split image reassembly script
@@ -152,6 +158,21 @@ meta-custom-rpi5/
 ├── docker-build.sh                         # Containerized build execution wrapper
 └── setup-workspace.sh                      # Layer clone and environment initializer
 ```
+
+---
+
+## Automotive Audio Architecture (PipeWire & Bluetooth)
+
+This layer provides zero-stutter wireless Bluetooth audio and broadcast radio routing to the vehicle's HDMI speakers:
+
+1. **Deterministic Quantum Lock (`10-audio-stability.conf`)**:
+   - Enforces clock quantum of `1024/48000` (21.3ms), matching the Bluetooth A2DP wireless packet burst interval to prevent underruns.
+2. **ALSA HDMI Hardware Buffer (`20-ivi-hdmi.conf`)**:
+   - Configured with 8 periods × 1024 frames (8192 frames ≈ 170ms) to ensure zero dropouts during CPU-heavy operations.
+3. **Telephony & Media Profile Coexistence (`10-bluez-ofono.conf`)**:
+   - Supports both `a2dp_sink` (with `[ aac sbc_xq sbc ]` codec prioritization) and `hfp_hf` using the oFono backend.
+4. **RF Antenna Coexistence (`70-wifi-powersave.rules`)**:
+   - Disables Wi-Fi power-save sleep modes that previously created 300–400ms Bluetooth packet reception blackouts on the shared 2.4 GHz BCM43455 antenna.
 
 ---
 
