@@ -1,0 +1,53 @@
+name: Yocto Layer CI & Validation
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  validate-layer:
+    name: Validate Yocto Layer & Recipes
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Layer
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Validate Layer Configuration
+        run: |
+          echo "Checking conf/layer.conf..."
+          test -f conf/layer.conf || (echo "conf/layer.conf missing!" && exit 1)
+          grep -q "BBFILE_COLLECTIONS" conf/layer.conf || (echo "BBFILE_COLLECTIONS missing in layer.conf" && exit 1)
+          echo "conf/layer.conf is valid."
+
+      - name: Lint Shell and Deployment Scripts
+        run: |
+          echo "Validating bash scripts..."
+          find . -name "*.sh" -exec bash -n {} +
+          echo "All shell scripts passed syntax validation."
+
+      - name: Compile and Validate Python Utility Scripts
+        run: |
+          echo "Validating Python scripts..."
+          find . -name "*.py" -exec python3 -m py_compile {} +
+          echo "All Python scripts compiled successfully."
+
+      - name: Verify Recipes and Systemd Configuration Files
+        run: |
+          echo "Verifying recipe structure..."
+          test -f recipes-qt/apex-ivi/apex-ivi.bb || exit 1
+          test -f recipes-qt/apex-ivi/files/apex-ivi.service || exit 1
+          test -f recipes-qt/apex-ivi/files/apex-usb-reset.py || exit 1
+          test -f recipes-qt/apex-ivi/files/10-audio-stability.conf || exit 1
+          test -f recipes-qt/apex-ivi/files/20-ivi-hdmi.conf || exit 1
+          test -f recipes-qt/apex-ivi/files/10-bluez-ofono.conf || exit 1
+          test -f recipes-qt/apex-ivi/files/30-pipewire-audio.conf || exit 1
+          echo "All critical recipes and configuration files are present and verified."
