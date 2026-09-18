@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/branding/yocto_project_logo.png" alt="Yocto Project" width="320" />
+
 # meta-custom-rpi5
 ### Board Support Package and Hardware-Accelerated Qt 6 Platform Layer for Raspberry Pi 5
 
